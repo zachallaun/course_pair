@@ -272,8 +272,8 @@ class MessagePage(webapp2.RequestHandler):
       else:
         logging.warning('Unknown room ' + room_key)
 
-class MainPage(webapp2.RequestHandler):
-  """The main UI page, renders the 'index.html' template."""
+class HandshakeHandler(webapp2.RequestHandler):
+  """Registers new clients"""
   def get(self):
     """Renders the main page. When this page is shown, we create a new
     channel to push asynchronous updates to the client."""
@@ -317,11 +317,6 @@ class MainPage(webapp2.RequestHandler):
 
     if not room_key:
       room_key = generate_random(8)
-      redirect = '/?r=' + room_key
-      redirect = append_url_arguments(self.request, redirect)
-      self.redirect(redirect)
-      logging.info('Redirecting visitor to base URL to ' + redirect)
-      return
 
     user = None
     initiator = 0
@@ -357,31 +352,27 @@ class MainPage(webapp2.RequestHandler):
     pc_constraints = make_pc_constraints(compat)
     offer_constraints = make_offer_constraints()
     media_constraints = make_media_constraints(media, min_re, max_re)
-    template_values = {'token': token,
-                       'me': user,
-                       'room_key': room_key,
-                       'room_link': room_link,
-                       'initiator': initiator,
-                       'pc_config': json.dumps(pc_config),
-                       'pc_constraints': json.dumps(pc_constraints),
-                       'offer_constraints': json.dumps(offer_constraints),
-                       'media_constraints': json.dumps(media_constraints),
-                       'turn_url': turn_url,
-                       'stereo': stereo
-                      }
+    client_data = {'token': token,
+                   'me': user,
+                   'room_key': room_key,
+                   'room_link': room_link,
+                   'initiator': initiator,
+                   'pc_config': pc_config,
+                   'pc_constraints': pc_constraints,
+                   'offer_constraints': offer_constraints,
+                   'media_constraints': media_constraints,
+                   'turn_url': turn_url,
+                   'stereo': stereo}
     # if unittest:
     #   target_page = 'test/test_' + unittest + '.html'
     # else:
-    target_page = 'g_index.html'
-
-    template = jinja_environment.get_template(target_page)
-    self.response.out.write(template.render(template_values))
+    self.response.out.write(json.dumps(client_data))
     # logging.info('User ' + user + ' added to room ' + room_key)
     # logging.info('Room ' + room_key + ' has state ' + str(room))
 
 
 app = webapp2.WSGIApplication([
-    ('/', MainPage),
+    ('/handshake', HandshakeHandler),
     ('/message', MessagePage),
     ('/_ah/channel/connected/', ConnectPage),
     ('/_ah/channel/disconnected/', DisconnectPage)
