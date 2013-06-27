@@ -61,15 +61,13 @@ function openChannel() {
   socket = channel.open(handler);
 }
 
-// ???????????? How do the iceServers work? What is the relationship between
-// ICE, STUN, and TURN?
 function maybeRequestTurn() {
-  // for (var i = 0, len = pcConfig.iceServers.length; i < len; i++) {
-  //   if (pcConfig.iceServers[i].utl.substr(0,5) === 'turn:') {
-  //     turnDone = true;
-  //     return;
-  //   }
-  // }
+  for (var i = 0, len = pcConfig.iceServers.length; i < len; i++) {
+    if (pcConfig.iceServers[i].utl.substr(0,5) === 'turn:') {
+      turnDone = true;
+      return;
+    }
+  }
   var currentDomain = document.domain;
   if (currentDomain.search('localhost') === -1 &&
       currentDomain.search('apprtc' === -1)) {
@@ -78,7 +76,6 @@ function maybeRequestTurn() {
       turnDone = true;
       return;
   }
-  // No turn server. Need to get one.
   xmlhttp = new XMLHttpRequest();
   xmlhttp.onreadystatechange = onTurnResult;
   console.log("Need to get a turn server. 'turnURL' is undefined.")
@@ -92,7 +89,6 @@ function onTurnResult() {
   }
   if (xmlhttp.status === 200) {
     var turnServer = JSON.parse(xmlhttp.responseText);
-    // Create a turnURI uring the polyfill (adapter.js)
     var iceServer = createIceServer(turnServer.uris[0], turnServer.username,
                                                         turnServer.password);
     pcConfig.iceServers.push(iceServer);
@@ -246,7 +242,6 @@ function sendMessage(message) {
   xhr.send(msgString);
 }
 
-////?????????? WTF is Opus?
 function processSignalingMessage(message) {
   if (!started) {
     console.log('peerConnection has not been created yet');
@@ -285,7 +280,6 @@ function onChannelOpened() {
   maybeStart();
 }
 
-////?????????? Why do you need this function? What does it do exactly?
 function onChannelMessage(message) {
   console.log("Received message from server: " + message.data);
   var msg = JSON.parse(message.data);
@@ -448,7 +442,6 @@ window.onbeforeunload = function() {
   console.log("Bye sent on refreshing page to ensure room is cleaned.");
 }
 
-// ???????????? Figure out what this does
 // Set the video displayin in the center of window
 window.onresize = function() {
     var aspectRatio;
