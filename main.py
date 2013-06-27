@@ -55,6 +55,7 @@ def handle_message(room, user, message):
   message_obj = json.loads(message)
   other_user = room.get_other_user(user)
   room_key = room.key().id_or_name()
+  print "other_user: ", other_user
   if message_obj['type'] == 'bye':
     # This would remove the other_user in loopback test too.
     # So check its availability before forwarding Bye message.
@@ -311,38 +312,18 @@ class HandshakeHandler(webapp2.RequestHandler):
                                            max_value = 3000,
                                            default = 30)
 
-    if unittest:
-      # Always create a new room for the unit tests.
-      room_key = generate_random(8)
+    if not room_key or unittest:
+      room_key = '23456789'#generate_random(8)
 
-    if not room_key:
-      room_key = generate_random(8)
-
-    user = None
-    initiator = 0
+    user = generate_random(8)
     with LOCK:
       room = Room.get_by_key_name(room_key)
-      if not room and debug != "full":
-        # New room.
-        user = generate_random(8)
-        room = Room(key_name = room_key)
-        room.add_user(user)
-        if debug != 'loopback':
-          initiator = 0
-        else:
-          room.add_user(user)
-          initiator = 1
-      elif room and room.get_occupancy() == 1 and debug != 'full':
-        # 1 occupant.
-        user = generate_random(8)
-        room.add_user(user)
-        initiator = 1
+      if not room:
+        room = Room(key_name=room_key)
+        initiator = True
       else:
-        # 2 occupants (full).
-        template = jinja_environment.get_template('full.html')
-        self.response.out.write(template.render({ 'room_key': room_key }))
-        logging.info('Room ' + room_key + ' is full')
-        return
+        initiator = False
+      room.add_user(user)
 
     room_link = base_url + '?r=' + room_key
     room_link = append_url_arguments(self.request, room_link)
@@ -353,7 +334,7 @@ class HandshakeHandler(webapp2.RequestHandler):
     offer_constraints = make_offer_constraints()
     media_constraints = make_media_constraints(media, min_re, max_re)
     client_data = {'token': token,
-                   'me': user,
+                   'user_id': user,
                    'room_key': room_key,
                    'room_link': room_link,
                    'initiator': initiator,
@@ -370,8 +351,13 @@ class HandshakeHandler(webapp2.RequestHandler):
     # logging.info('User ' + user + ' added to room ' + room_key)
     # logging.info('Room ' + room_key + ' has state ' + str(room))
 
+class MainPage(webapp2.RequestHandler):
+  def get(self):
+    template = jinja_environment.get_template('g_index.html')
+    self.response.out.write(template.render())
 
 app = webapp2.WSGIApplication([
+    ('/', MainPage),
     ('/handshake', HandshakeHandler),
     ('/message', MessagePage),
     ('/_ah/channel/connected/', ConnectPage),

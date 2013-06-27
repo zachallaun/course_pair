@@ -14,6 +14,19 @@ var localVideo
 , channelReady = false
 , signalingReady = false
 , msgQueue = [];
+
+// Client data
+var channelToken
+, user_id
+, roomKey
+, initiator
+, pcConfig
+, pcConstraints
+, offerConstraints
+, mediaConstraints
+, turnUrl
+, stereo;
+
 // Set up audio and video regardless of devices
 var sdpConstraints = {'mandatory': {
                         'OfferToReceiveAudio': true,
@@ -30,12 +43,39 @@ var shareConstraints = { video: {
                             chromeMediaSource: 'screen' }}};
 
 function initialize() {
+  $.ajax({
+    url: "/handshake",
+    dataType: 'json',
+    success: function(data) {
+      console.log(data);
+      var clientData = data;
+
+      channelToken = clientData['token'];
+      user_id = clientData['user_id'];
+      roomKey = clientData['room_key'];
+      initiator = clientData['initiator'];
+      pcConfig = clientData['pc_config'];
+      pcConstraints = clientData['pc_constraints'];
+      offerConstraints = clientData['offer_constraints'];
+      mediaConstraints = clientData['media_constraints'];
+      turnUrl = clientData['turn_url'];
+      stereo = clientData['stereo'];
+
+      initializeVideo();
+    },
+    error: function(_, status) {
+      console.log("Handshake failed: ", status);
+    }
+  });
+}
+
+function initializeVideo() {
   console.log('Initializing; room=' + roomKey + '.');
   card = document.getElementById('card');
   localVideo = document.getElementById('localVideo');
   // Reset localVideo to display to center
   localVideo.addEventListener('loadedmetadata', function() {
-    window.onresize();
+    //window.onresize();
   });
   miniVideo = document.getElementById('miniVideo');
   remoteVideo = document.getElementById('remoteVideo');
@@ -63,7 +103,7 @@ function openChannel() {
 
 function maybeRequestTurn() {
   for (var i = 0, len = pcConfig.iceServers.length; i < len; i++) {
-    if (pcConfig.iceServers[i].utl.substr(0,5) === 'turn:') {
+    if (pcConfig.iceServers[i].url.substr(0,5) === 'turn:') {
       turnDone = true;
       return;
     }
@@ -117,8 +157,7 @@ function createIceServer(turn_url, username, password) {
 
 function resetStatus() {
   if(!initiator) {
-    setStatus('Waiting for someone to join. \
-              <a href=' + roomLink + '>' + roomLink + '</a>');
+    setStatus('Waiting for someone to join.');
   } else {
     setStatus('Initializing...')
   }
@@ -134,6 +173,10 @@ function doGetUserMedia(constraints) {
 }
 
 function maybeStart() {
+  console.log('signalingReady: ', signalingReady);
+  console.log('localStream: ', localStream);
+  console.log('channelReady: ', channelReady);
+  console.log('turnDone: ', turnDone);
   if (signalingReady && localStream && channelReady && turnDone) {
     setStatus('Connecting');
     console.log('Creating PeerConnection.');
@@ -236,7 +279,7 @@ function sendMessage(message) {
   console.log('Sending client to server message: ' + msgString);
   // NOTE: AppRTCClient.java searches & parses this line; update there when
   // changing here.
-  path = '/message?r=' + roomKey + '&u=' + me;
+  path = '/message?r=' + roomKey + '&u=' + user_id;
   var xhr = new XMLHttpRequest();
   xhr.open('POST', path, true);
   xhr.send(msgString);
@@ -408,8 +451,7 @@ function transitionToDone() {
   localVideo.style.opacity = 0;
   remoteVideo.style.opacity = 0;
   miniVideo.style.opacity = 0;
-  setStatus('You have left the call. <a href=' + roomLink + '>\
-            Click here</a> to rejoin.');
+  setStatus('You have left the call.');
 }
 
 function onHangup() {
@@ -586,10 +628,9 @@ $(document).ready(function(){
     } else {
       flipLocalVideo(mediaConstraints, "camera.");
     }
-    
+
     $body.toggleClass("video");
 
   });
 
 });
-

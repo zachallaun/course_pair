@@ -2,28 +2,13 @@
 <html>
 <head>
   <title>Screenshare app</title>
-  
+
   <meta http-equiv="X-UA-Compatible" content="chrome=1"/>
 
-  <link rel="canonical" href="{{ room_link }}"/>
   <link rel="stylesheet" href="css/main.css" />
 
 </head>
 <body>
-  <script type="text/javascript">
-    var channelToken = '{{ token }}';
-    var me = '{{ me }}';
-    var roomKey = '{{ room_key }}';
-    var roomLink = '{{ room_link }}';
-    var initiator = {{ initiator }};
-    var pcConfig = {{ pc_config|safe }};
-    var pcConstraints = {{ pc_constraints|safe }};
-    var offerConstraints = {{ offer_constraints | safe }};
-    var mediaConstraints = {{ media_constraints | safe }};
-    var turnUrl = '{{ turn_url }}';
-    var stereo = {{ stereo }};
-  </script>
-
   <h1>Screenshare with WebRTC (requires HTTPS)</h1>
   <div id="container">
     <button id="flip">Flip video source</button>
@@ -47,15 +32,3 @@
 <footer id = "footer">
 </footer>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
