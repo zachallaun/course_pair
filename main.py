@@ -313,7 +313,7 @@ class HandshakeHandler(webapp2.RequestHandler):
                                            default = 30)
 
     if not room_key or unittest:
-      room_key = '23456789'#generate_random(8)
+      room_key = '323456789'#generate_random(8)
 
     user = generate_random(8)
     with LOCK:

@@ -103,6 +103,7 @@ function openChannel() {
 
 function maybeRequestTurn() {
   for (var i = 0, len = pcConfig.iceServers.length; i < len; i++) {
+    console.log(pcConfig.iceServers);
     if (pcConfig.iceServers[i].url.substr(0,5) === 'turn:') {
       turnDone = true;
       return;
@@ -129,6 +130,7 @@ function onTurnResult() {
   }
   if (xmlhttp.status === 200) {
     var turnServer = JSON.parse(xmlhttp.responseText);
+    console.log(turnServer);
     var iceServer = createIceServer(turnServer.uris[0], turnServer.username,
                                                         turnServer.password);
     pcConfig.iceServers.push(iceServer);
@@ -173,10 +175,6 @@ function doGetUserMedia(constraints) {
 }
 
 function maybeStart() {
-  console.log('signalingReady: ', signalingReady);
-  console.log('localStream: ', localStream);
-  console.log('channelReady: ', channelReady);
-  console.log('turnDone: ', turnDone);
   if (signalingReady && localStream && channelReady && turnDone) {
     setStatus('Connecting');
     console.log('Creating PeerConnection.');
@@ -225,6 +223,9 @@ function createPeerConnection() {
 }
 
 function onIceCandidate(event) {
+  console.log('Label: ' + event.candidate.sdpMLineIndex);
+  console.log('id: ' + event.candidate.sdpMid);
+  console.log('Candidate: ' + event.candidate.candidate);
   if(event.candidate) {
     sendMessage( { type: 'candidate',
                    label: event.candidate.sdpMLineIndex,
