@@ -308,9 +308,9 @@ var processChannelMessage = function(message) {
   // For offers and answers, need to make sure that there is not currently
   // a peer connection before calling handlers
   if (message.type === 'offer') {
-    if (!pc) { handlePeerConnectionOffer(message) };
+    handlePeerConnectionOffer(message);
   } else if (message.type === 'answer') {
-    if (!pc) { handlePeerConnectionAnswer(message) };
+    handlePeerConnectionAnswer(message);
   } else if (message.type === 'candidate') {
     handleCandidateMessage(message);
   } else if (message.type === 'connectionRequest') {
