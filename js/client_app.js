@@ -51,18 +51,17 @@
 
       success: function(data) {
         console.log('Received intialization data from server: ' + data);
-        clientData = data;
 
-        channelToken = clientData['token'];
-        userId = clientData['userId'];
-        roomKey = clientData['room_key'];
-        initiator = clientData['initiator'];
-        pcConfig = clientData['pc_config'];
-        pcConstraints = clientData['pc_constraints'];
-        offerConstraints = clientData['offer_constraints'];
-        mediaConstraints = clientData['media_constraints'];
-        turnUrl = clientData['turn_url'];
-        stereo = clientData['stereo'];
+        channelToken = data['token'];
+        userId = data['userId'];
+        roomKey = data['room_key'];
+        initiator = data['initiator'];
+        pcConfig = data['pc_config'];
+        pcConstraints = data['pc_constraints'];
+        offerConstraints = data['offer_constraints'];
+        mediaConstraints = data['media_constraints'];
+        turnUrl = data['turn_url'];
+        stereo = data['stereo'];
 
         callGroundworkFunctions();
       },
