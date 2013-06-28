@@ -263,7 +263,6 @@
   }
 
   var handlePeerConnectionOffer = function(message) {
-    offerReceived = true;
     tryCreateConnection();
     if (stereo) {
       message.sdp = addStereo(message.sdp);
