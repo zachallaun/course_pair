@@ -153,29 +153,26 @@
       }
     }
     console.log('pcConfig not initialized with any TURN servers. Sending TURN server request.');
-    xmlhttp = new XMLHttpRequest();
-    xmlhttp.onreadystatechange = onTURNResult;
-    xmlhttp.open('GET', turnUrl, true);
-    xmlhttp.send();
+    $.ajax({
+      url: turnUrl,
+      success: onTURNSuccess,
+      dataType: 'json',
+      error: function() {
+        console.log('Request for TURN server failed. Will continue call with default STUN.');
+      },
+      complete: function() {
+        turnDone = true;
+        startWhenReady();
+      }
+    });
   }
 
-  var onTURNResult = function() {
-    if (xmlhttp.readyState !== 4) {
-      return;
-    }
-
-    if (xmlhttp.status === 200) {
-      var turnServer = JSON.parse(xmlhttp.responseText);
-      var iceServer = createIceServer(turnServer.uris[0],
-                                      turnServer.username,
-                                      turnServer.password);
-      pcConfig.iceServers.push(iceServer);
-      console.log('TURN server request was successful.');
-    } else {
-      console.log('Request for TURN server failed. Will continue call with default STUN.');
-    }
-    turnDone = true;
-    startWhenReady();
+  var onTURNSuccess = function(turnServer) {
+    var iceServer = createIceServer(turnServer.uris[0],
+                                    turnServer.username,
+                                    turnServer.password);
+    pcConfig.iceServers.push(iceServer);
+    console.log('TURN server request was successful.');
   }
 
   var createIceServer = function(turnUrl, username, password) {
