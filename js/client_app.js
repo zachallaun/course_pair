@@ -10,9 +10,12 @@ var getUserMedia = navigator.webkitGetUserMedia.bind(navigator),
     videoTracks;
 
 // Media constraints
-var sdpConstraints = {'mandatory': {
-                        'OfferToReceiveAudio': true,
-                        'OfferToReceiveVideo': true}};
+var sdpConstraints = {
+  'mandatory': {
+    'OfferToReceiveAudio': true,
+    'OfferToReceiveVideo': true
+  }
+};
 
 // Groundwork function completion variables
 var readyToConnect = false,
@@ -25,7 +28,6 @@ var messageQueue = [],
     pc,
     socket,
     xmlhttp;
-
 
 // Application initialization variables (from server)
 var channelToken,
@@ -41,7 +43,7 @@ var channelToken,
 
 var initialize = function(){
   console.log('Sending request for initialization variables')
-  $.ajax( {
+  $.ajax({
     url: '/handshake',
     dataType: 'json',
 
@@ -60,7 +62,7 @@ var initialize = function(){
       turnUrl = clientData['turn_url'];
       stereo = clientData['stereo'];
 
-      callGroundworkFunctions();     
+      callGroundworkFunctions();
     },
     error: function(_, errorMessage) {
       console.log('Handshake failed: ', status);
@@ -83,7 +85,7 @@ var startWhenReady = function() {
     readyToConnect = true;
     if (initiator) {
       console.log('Initiator is ready to connect');
-      sendPeerConnectionOffer();  
+      sendPeerConnectionOffer();
     } else {
       console.log('Receiver is ready to connect');
 
@@ -169,7 +171,7 @@ var onTURNResult = function() {
     pcConfig.iceServers.push(iceServer);
     console.log('TURN server request was successful.');
   } else {
-    console.log('Request for TURN server failed. Will continue call with default STUN.'); 
+    console.log('Request for TURN server failed. Will continue call with default STUN.');
   }
   turnDone = true;
   startWhenReady();
@@ -177,23 +179,29 @@ var onTURNResult = function() {
 
 var createIceServer = function(turn_url, username, password) {
   if (webRTCDetectedVersion < 28) {
-    var iceServer = { 'url': 'turn:' + username + '@' + turn_url,
-                      'credential': password };
+    var iceServer = {
+      'url': 'turn:' + username + '@' + turn_url,
+      'credential': password
+    };
     return iceServer;
   } else {
-    var iceServer = { 'url': turn_url,
-                      'credential': password,
-                      'username': username };
+    var iceServer = {
+      'url': turn_url,
+      'credential': password,
+      'username': username
+    };
     return iceServer;
   }
 }
 
 var onIceCandidate = function(event) {
   if (event.candidate) {
-    sendMessage( { type: 'candidate',
-                   label: event.candidate.sdpMLineIndex,
-                   id: event.candidate.sdpMid,
-                   candidate: event.candidate.candidate});
+    sendMessage({
+      type: 'candidate',
+      label: event.candidate.sdpMLineIndex,
+      id: event.candidate.sdpMid,
+      candidate: event.candidate.candidate
+    });
   } else {
     console.log('End of candidates');
   }
@@ -273,9 +281,7 @@ var sendPeerConnectionAnswer = function() {
 }
 
 var handlePeerConnectionAnswer = function(message) {
-  if (stereo) {
-    message.sdp = addStereo(message.sdp);
-  }
+  if (stereo) message.sdp = addStereo(message.sdp);
   pc.setRemoteDescription(new RTCSessionDescription(message));
 }
 
@@ -326,8 +332,10 @@ var processChannelMessage = function(message) {
 // before calling addIceCandidate
 var handleCandidateMessage = function(message) {
   if (pc) {
-    var candidate = new RTCIceCandidate({sdpMLineIndex: message.label,
-                                         candidate: message.candidate});
+    var candidate = new RTCIceCandidate({
+      sdpMLineIndex: message.label,
+      candidate: message.candidate
+    });
     pc.addIceCandidate(candidate);
   } else {
     messageQueue.push(message);
@@ -374,7 +382,7 @@ var hangup = function() {
 }
 
 var onHangup = function() {
-  if(pc) { pc.close() };
+  if(pc) pc.close();
   pc = null;
 }
 
