@@ -33,7 +33,7 @@
 
   // Application initialization variables (from server)
   var channelToken,
-      user_id,
+      userId,
       roomKey,
       initiator,
       pcConfig,
@@ -54,7 +54,7 @@
         clientData = data;
 
         channelToken = clientData['token'];
-        user_id = clientData['user_id'];
+        userId = clientData['userId'];
         roomKey = clientData['room_key'];
         initiator = clientData['initiator'];
         pcConfig = clientData['pc_config'];
@@ -179,16 +179,16 @@
     startWhenReady();
   }
 
-  var createIceServer = function(turn_url, username, password) {
+  var createIceServer = function(turnUrl, username, password) {
     if (webRTCDetectedVersion < 28) {
       var iceServer = {
-        'url': 'turn:' + username + '@' + turn_url,
+        'url': 'turn:' + username + '@' + turnUrl,
         'credential': password
       };
       return iceServer;
     } else {
       var iceServer = {
-        'url': turn_url,
+        'url': turnUrl,
         'credential': password,
         'username': username
       };
@@ -401,7 +401,7 @@
     var xhr = new XMLHttpRequest();
 
     console.log('Sending client to server message: ' + msgString);
-    path = '/message?r=' + roomKey + '&u=' + user_id;
+    path = '/message?r=' + roomKey + '&u=' + userId;
     xhr.open('POST', path, true);
     xhr.send(msgString);
   }
