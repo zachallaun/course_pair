@@ -145,13 +145,6 @@
   // Section 3: Use STUN/TURN servers to identify available sockets
 
   var sendTURNRequest = function() {
-    var numberOfServerObjects = pcConfig.iceServers.length;
-    for (var i = 0; i < numberOfServerObjects; i++) {
-      if (pcConfig.iceServers[i].url.substr(0,5) === 'turn:') {
-        console.log('pcConfig initialization sent with TURN servers');
-        return;
-      }
-    }
     console.log('pcConfig not initialized with any TURN servers. Sending TURN server request.');
     $.ajax({
       url: turnUrl,
